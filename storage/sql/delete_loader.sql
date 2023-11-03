@@ -1,0 +1,1 @@
+DELETE FROM loader WHERE id = $1

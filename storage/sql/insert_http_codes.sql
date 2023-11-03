@@ -1,0 +1,1 @@
+INSERT INTO http_codes (code, count, summary) VALUES (:code, :count, :summary)

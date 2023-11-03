@@ -1,0 +1,2 @@
+INSERT INTO aggregated_stats(start, end, duration, avg_request_time, max_request_time, min_request_time, request_count, summary_uuid)
+VALUES(:start, :end, :duration, :avg_request_time, :max_request_time, :min_request_time, :request_count, :summary_uuid)

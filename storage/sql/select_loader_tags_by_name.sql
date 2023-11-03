@@ -1,0 +1,1 @@
+SELECT key,value,loader_uuid FROM loader_tag WHERE key=$1

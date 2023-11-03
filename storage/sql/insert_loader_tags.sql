@@ -1,0 +1,1 @@
+INSERT INTO loader_tag (key, value, loader_uuid) VALUES (:key, :value, :loader_uuid)
