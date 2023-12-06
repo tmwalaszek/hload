@@ -1,0 +1,1 @@
+SELECT start,end,duration,body_size,ret_code,error FROM requests_stats WHERE summary_uuid=$1;

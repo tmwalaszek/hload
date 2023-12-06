@@ -1,0 +1,1 @@
+SELECT start,end,duration,avg_request_time,max_request_time,min_request_time,request_count FROM aggregated_stats WHERE summary_uuid=$1;

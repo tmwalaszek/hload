@@ -1,0 +1,27 @@
+{{ define "main" }}
+SELECT
+    summary.*,
+    coalesce(group_concat(errors.name,','), '')  AS "errors_name_agg",
+    coalesce(group_concat(errors.count,','), '') AS "errors_count_agg",
+    coalesce(group_concat(http_codes.code,','), '') AS "http_codes_code_agg",
+    coalesce(group_concat(http_codes.count,','), '') AS "http_codes_count_agg"
+FROM summary
+    LEFT JOIN errors ON summary.uuid=errors.summary
+    LEFT JOIN http_codes ON summary.uuid=http_codes.summary
+{{ end }}
+
+{{ define "loader_uuid" }}
+{{ template "main" }}
+WHERE loader_uuid=$1
+GROUP BY summary.uuid
+ORDER BY start DESC
+LIMIT $2
+{{ end }}
+
+{{ define "range" }}
+{{ template "main" }}
+WHERE loader_uuid=$1 AND CAST(strftime('%s', start) AS INT)  BETWEEN $2 AND $3
+GROUP BY summary.uuid
+ORDER BY start DESC
+LIMIT $4
+{{ end }}

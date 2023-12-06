@@ -1,0 +1,29 @@
+[
+  {
+    "url": "http://192.168.50.147:8080",
+    "description": "",
+    "start": "2023-10-28 00:51",
+    "end": "2023-10-28 00:52",
+    "total_time": 30024928584,
+    "requests_count": 1000,
+    "success_req": 0,
+    "fail_req": 1000,
+    "data_transferred": 0,
+    "req_per_sec": 0,
+    "avg_req_time": 0,
+    "min_req_time": 3000022542,
+    "max_req_time": 3011604833,
+    "p_50_req_time": 3000223602,
+    "p_75_req_time": 3000793157,
+    "p_90_req_time": 3003085262,
+    "p_99_req_time": 3010487530,
+    "std_deviation": 0,
+    "errors": {
+      "dial tcp4 192.168.50.147:8080: i/o timeout": 241,
+      "dialing to the given TCP address timed out": 759
+    },
+    "http_codes": null,
+    "aggregated_stats": null,
+    "request_stats": null
+  }
+]

@@ -1,0 +1,63 @@
+{{ define "main" }}
+SELECT loader.*,
+       loader_requests_details.*,
+       coalesce(group_concat(DISTINCT loader_tag.key), '') AS tags_keys_agg,
+       coalesce(group_concat(DISTINCT loader_tag.value), '') AS tags_values_agg,
+       coalesce(group_concat(DISTINCT header.header), '') AS headers_agg,
+       coalesce(group_concat(DISTINCT parameter.parameters), '') AS parameters_agg
+FROM loader
+    LEFT JOIN loader_tag ON loader.uuid=loader_tag.loader_uuid
+    LEFT JOIN "loader_requests_details" ON loader.uuid="loader_requests_details".loader_uuid
+    LEFT JOIN "header" ON loader.uuid="header".loader_uuid
+    LEFT JOIN "parameter" ON loader.uuid="parameter".loader_uuid
+{{ end }}
+
+{{ define "limit" }}
+{{ template "main" }}
+GROUP BY loader.uuid
+ORDER BY strftime('%s', loader.create_date) DESC
+LIMIT $1;
+{{ end }}
+
+{{ define "by_loader.id" }}
+{{ template "main" }}
+WHERE loader.uuid=$1
+GROUP BY loader.uuid
+{{ end }}
+
+{{ define "by_loader.description" }}
+{{ template "main" }}
+WHERE loader.description LIKE $1
+GROUP BY loader.uuid
+{{ end }}
+
+{{ define "by_loader.name" }}
+{{ template "main" }}
+WHERE loader.name LIKE $1
+GROUP BY loader.uuid
+{{ end }}
+
+{{ define "by_time_scope" }}
+{{ template "main" }}
+WHERE CAST(strftime('%s', loader.create_date) AS INT) BETWEEN $1 AND $2
+GROUP BY loader.uuid
+ORDER BY strftime('%s', loader.create_date) DESC
+LIMIT $3;
+{{ end }}
+
+{{ define "by_loader.tag" }}
+{{ template "main" }}
+{{ $lengthTags := len .Tags }}
+{{ $i := 0 }}
+{{ printf "WHERE " -}}
+{{ range .Tags -}}
+    {{ $place_holder_one := add $i 1 }}
+    {{ $place_holder_two := add $i 2 }}
+    {{ printf "loader_tag.key=$%d AND loader_tag.value=$%d" $place_holder_one $place_holder_two -}}
+    {{ $i = add $i 2 }}
+    {{ if lt $i $lengthTags }}
+    {{ printf " AND " -}}
+    {{ end }}
+{{ end }}
+GROUP BY loader.uuid
+{{ end }}

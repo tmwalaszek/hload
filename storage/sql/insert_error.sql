@@ -1,0 +1,1 @@
+INSERT INTO errors (name, count, summary) VALUES (:name, :count, :summary)

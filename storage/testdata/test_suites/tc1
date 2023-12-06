@@ -1,0 +1,58 @@
+insert-loader-options
+{
+ "url": "http://192.168.50.147:8080",
+ "name": "Configuration Fri, 27 Oct 2023 13:00:49.097",
+ "method": "GET",
+ "http_engine": "fast_http",
+ "description": "Default loader description",
+ "create_date": "2023-10-27T13:00:49.105155+02:00",
+ "aggregate_window": 10000000000,
+ "request_count": 10000,
+ "connections": 100
+}
+
+----
+
+insert-loader-summary
+{
+ "id": "903218a5-335f-4310-bb53-708cba63fdc0",
+ "url": "http://192.168.50.147:8080",
+ "description": "",
+ "start": "2023-10-27T13:00:49.107042+02:00",
+ "end": "2023-10-27T13:00:51.646032+02:00",
+ "total_time": 2539503625,
+ "requests_count": 10000,
+ "success_req": 10000,
+ "fail_req": 0,
+ "data_transferred": 6150000,
+ "req_per_sec": 3937.7774071891704,
+ "avg_req_time": 24529043,
+ "min_req_time": 6599833,
+ "max_req_time": 113345792,
+ "p_50_req_time": 21953553,
+ "p_75_req_time": 29721159,
+ "p_90_req_time": 34894345,
+ "p_99_req_time": 106832814,
+ "std_deviation": 0,
+ "errors": null,
+ "http_codes": {
+  "200": 10000
+ },
+ "aggregated_stats": null,
+ "request_stats": null
+}
+
+----
+
+insert-loader-options
+{
+ "url": "http://192.168.50.147:8080",
+ "name": "Configuration Sat, 28 Oct 2023 00:41:01.913",
+ "method": "GET",
+ "http_engine": "fast_http",
+ "description": "Default loader description",
+ "create_date": "2023-10-28T00:41:01.913312+02:00",
+ "aggregate_window": 10000000000,
+ "request_count": 1000,
+ "connections": 100
+}

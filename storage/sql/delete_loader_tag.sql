@@ -1,0 +1,1 @@
+DELETE FROM loader_tag WHERE key=$1 AND value=$2 and loader_uuid=$3
