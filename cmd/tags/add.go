@@ -64,8 +64,8 @@ func NewTagsAddCmd(cliIO cliio.IO) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.UUID, "uuid", "u", "", "Loader configuration UUID")
 	cmd.Flags().StringArrayVarP(&opts.TagNames, "tag", "t", []string{}, "Tag names pairs")
 
-	cmd.MarkFlagRequired("uuid")
-	cmd.MarkFlagRequired("tag")
+	_ = cmd.MarkFlagRequired("uuid")
+	_ = cmd.MarkFlagRequired("tag")
 
 	return cmd
 }
