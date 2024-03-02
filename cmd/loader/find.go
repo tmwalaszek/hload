@@ -119,14 +119,11 @@ func (o *FindOptions) Run() {
 
 		summaries := o.getSummaries(loaderConf.UUID)
 
-		if loaderConf != nil {
-			loaderOpts := common.LoaderSummaries{
-				Loader:    loaderConf,
-				Summaries: summaries,
-			}
-
-			loaderSummary = append(loaderSummary, loaderOpts)
+		loaderOpts := common.LoaderSummaries{
+			Loader:    loaderConf,
+			Summaries: summaries,
 		}
+		loaderSummary = append(loaderSummary, loaderOpts)
 	} else if o.LoaderDescription != "" {
 		loaders, err = o.db.GetLoaderByDescription(o.LoaderDescription)
 		if err != nil {
