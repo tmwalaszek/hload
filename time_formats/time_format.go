@@ -77,6 +77,10 @@ func TimeToEpoch(timeVal string) (int64, error) {
 	}
 
 	timeDiff, err := timeZoneOffset()
+	if err != nil {
+		return 0, fmt.Errorf("could not get timezone offset: %w", err)
+	}
+
 	t = t.Add(-timeDiff)
 	return t.Unix(), nil
 }
