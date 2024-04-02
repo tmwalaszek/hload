@@ -162,6 +162,7 @@ func TestStorageOneLoaderOpts(t *testing.T) {
 			format := "2006-01-02 15:04"
 			timeOnly := now.UTC().Format(format)
 			parsedTime, err := time.Parse(format, timeOnly)
+			require.Nil(t, err)
 
 			// --- Read the data from the database and compare with the JSONs we inserted
 			loader, err := store.GetLoaderByID(loaderOpts.UUID)
