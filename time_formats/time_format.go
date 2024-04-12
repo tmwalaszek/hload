@@ -19,28 +19,13 @@ var timeFormats = []string{
 }
 
 func timeFromDuration(now time.Time, timeVal string) (int64, error) {
-	var d time.Duration
-	var err error
-
-	d, err = time.ParseDuration(timeVal)
-	if err == nil {
-		diff := now.Add(-d)
-		return diff.Unix(), nil
-	}
-
-	return 0, err
-}
-
-func timeZoneOffset() (time.Duration, error) {
-	utcTime := time.Now().UTC()
-	localTimeZone, err := time.LoadLocation("Europe/Warsaw")
+	d, err := time.ParseDuration(timeVal)
 	if err != nil {
-		return 0, fmt.Errorf("could not load local timezone: %w", err)
+		return 0, err
 	}
 
-	_, offset := utcTime.In(localTimeZone).Zone()
-
-	return time.Duration(offset) * time.Second, nil
+	diff := now.Add(-d)
+	return diff.Unix(), nil
 }
 
 func TimeToEpoch(timeVal string) (int64, error) {
@@ -55,8 +40,9 @@ func TimeToEpoch(timeVal string) (int64, error) {
 		return durationTime, nil
 	}
 
+	loc, _ := time.LoadLocation("Local")
 	for _, format := range timeFormats {
-		t, err = time.Parse(format, timeVal)
+		t, err = time.ParseInLocation(format, timeVal, loc)
 		if err == nil {
 			break
 		}
@@ -76,11 +62,6 @@ func TimeToEpoch(timeVal string) (int64, error) {
 		return 0, fmt.Errorf("could not parse time: %w", err)
 	}
 
-	timeDiff, err := timeZoneOffset()
-	if err != nil {
-		return 0, fmt.Errorf("could not get timezone offset: %w", err)
-	}
-
-	t = t.Add(-timeDiff)
-	return t.Unix(), nil
+	u := t.Unix()
+	return u, nil
 }

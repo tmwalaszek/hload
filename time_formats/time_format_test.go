@@ -1,6 +1,7 @@
 package time_formats
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -8,21 +9,43 @@ import (
 )
 
 func TestTimeToEpoch(t *testing.T) {
-	times := []string{"01.02.2022",
-		"01.02.22",
-		"02/01/2022",
-		"02/01/22",
-		"02012022",
-		"020122",
-		"00:00_20220201",
-		"20220201",
-		"02/01/22",
+	var tt = []struct {
+		Times     []string
+		Epoch     int64
+		Timezones []string
+	}{
+		{
+			Times: []string{"01.02.2022",
+				"01.02.22",
+				"02/01/2022",
+				"02/01/22",
+				"02012022",
+				"020122",
+				"00:00_20220201",
+				"20220201",
+				"02/01/22",
+			},
+			Epoch:     1643670000,
+			Timezones: []string{"Europe/Warsaw", "America/New_York", "America/Dominica"},
+		},
+		{
+			Times:     []string{"00:00_20240411"},
+			Epoch:     1712786400,
+			Timezones: []string{"Europe/Warsaw", "America/New_York", "America/Dominica"},
+		},
 	}
 
-	for _, atTime := range times {
-		epoch, err := TimeToEpoch(atTime)
-		require.Nil(t, err)
-		require.Equal(t, int64(1643670000), epoch)
+	for _, tc := range tt {
+		for _, tz := range tc.Timezones {
+			err := os.Setenv("TZ", tz)
+			require.Nil(t, err)
+
+			for _, atTime := range tc.Times {
+				epoch, err := TimeToEpoch(atTime)
+				require.Nil(t, err)
+				require.Equal(t, tc.Epoch, epoch)
+			}
+		}
 	}
 
 	brokenTimes := []string{"01.02.2022.01",
