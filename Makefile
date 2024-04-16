@@ -6,8 +6,8 @@ os = $(shell uname -s | tr '[:upper:]' '[:lower:]')
 arch = $(shell uname -m)
 git_commit = $(shell git rev-parse --short HEAD)
 major = 1
-minor = 0
-patch = 1
+minor = 1
+patch = 0
 go_version = $(shell go version | awk '{print $$3}')
 build_date = $(shell date +%FT%T%z)
 

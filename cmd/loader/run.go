@@ -272,6 +272,15 @@ func (o *RunOptions) Complete() {
 		}
 	}
 
+	if viper.GetString("cookie") != "" {
+		cookieHeader := fmt.Sprintf("Cookie: %s", viper.GetString("cookie"))
+		err = headers.Set(cookieHeader)
+		if err != nil {
+			fmt.Fprintf(o.Err, "Error setting cookie header: %v", err)
+			os.Exit(1)
+		}
+	}
+
 	for _, value := range viper.GetStringSlice("parameter") {
 		err := params.Set(value)
 		if err != nil {
@@ -410,6 +419,7 @@ func NewLoaderRunCmd(cliIO cliio.IO) *cobra.Command {
 	cmd.Flags().String("key", "", "Key path")
 	cmd.Flags().String("body", "", "Path to the body file")
 	cmd.Flags().String("save-loader", "", "Save the loader configuration to a file (json)")
+	cmd.Flags().StringP("cookie", "b", "", "Send the data in the HTTP Cookie header")
 	cmd.Flags().Var(&opts.Engine, "engine", "HTTP library used: fast_http or net/http")
 
 	cmd.Flags().BoolP("insecure", "i", false, "TLS Skip verify")
