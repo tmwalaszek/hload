@@ -2,6 +2,7 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -17,6 +18,70 @@ type tempSummary struct {
 
 	Start string `json:"start"`
 	End   string `json:"end"`
+}
+
+func TestStorageTemplate(t *testing.T) {
+	s, err := NewStorage("test_file.db")
+	require.Nil(t, err)
+
+	defer os.Remove("test_file.db")
+
+	var tt = []*struct {
+		Name      string
+		Templates model.Template
+	}{
+		{
+			Name: "Test 1 - one template",
+			Templates: model.Template{
+				Name:    "template1",
+				Content: "content1",
+			},
+		},
+	}
+
+	// just try to insert the template and save the UUID for later tests
+	for _, tc := range tt {
+		t.Run(fmt.Sprintf("Insert %s", tc.Name), func(t *testing.T) {
+			err = s.InsertTemplate(tc.Templates.Name, tc.Templates.Content)
+			require.Nil(t, err)
+		})
+	}
+
+	// using the uuid and the name, try to get the template
+	for _, tc := range tt {
+		t.Run(fmt.Sprintf("Get %s", tc.Name), func(t *testing.T) {
+			tmpl, err := s.GetTemplateByName(tc.Templates.Name)
+			require.Nil(t, err)
+			require.Equal(t, tc.Templates.Name, tmpl.Name)
+			require.Equal(t, tc.Templates.Content, tmpl.Content)
+		})
+	}
+
+	// try to modify the content of the template
+	for _, tc := range tt {
+		t.Run(fmt.Sprintf("Update %s", tc.Name), func(t *testing.T) {
+			newContent := "new content"
+			err = s.UpdateTemplate(tc.Templates.Name, newContent)
+			require.Nil(t, err)
+
+			tmpl, err := s.GetTemplateByName(tc.Templates.Name)
+			require.Nil(t, err)
+			require.Equal(t, tc.Templates.Name, tmpl.Name)
+			require.Equal(t, newContent, tmpl.Content)
+		})
+	}
+
+	// try to delete the template
+	for _, tc := range tt {
+		t.Run(fmt.Sprintf("Delete %s", tc.Name), func(t *testing.T) {
+			err = s.DeleteTemplate(tc.Templates.Name)
+			require.Nil(t, err)
+
+			_, err = s.GetTemplateByName(tc.Templates.Name)
+			require.NotNil(t, err)
+		})
+	}
+
 }
 
 func TestStorageTags(t *testing.T) {

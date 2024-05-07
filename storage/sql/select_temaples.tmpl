@@ -1,0 +1,15 @@
+{{ define "main" }}
+SELECT * FROM templates
+{{ end }}
+
+{{ define "all" }}
+{{ template "main" }}
+ORDER BY create_date DESC
+LIMIT $1
+{{ end }}
+
+{{ define "by_name" }}
+{{ template "main" }}
+WHERE name LIKE $1
+ORDER BY create_date DESC
+{{ end }}

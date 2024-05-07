@@ -13,6 +13,7 @@ import (
 	"github.com/tmwalaszek/hload/cmd/common"
 	"github.com/tmwalaszek/hload/cmd/loader"
 	"github.com/tmwalaszek/hload/cmd/tags"
+	"github.com/tmwalaszek/hload/cmd/template"
 	"github.com/tmwalaszek/hload/cmd/version"
 
 	"github.com/spf13/cobra"
@@ -20,10 +21,11 @@ import (
 )
 
 var (
-	cfgFile     string
-	dbFile      string
-	profileFile string
-	profileType string
+	cfgFile        string
+	dbFile         string
+	profileFile    string
+	profileType    string
+	renderTemplate string
 
 	pprofEnabled bool
 )
@@ -53,9 +55,11 @@ var rootCmd = &cobra.Command{
 			runtime.SetBlockProfileRate(1)
 		case "mutex":
 			runtime.SetMutexProfileFraction(1)
-		case "mem":
 		default:
-			log.Fatalf("unknown profile '%s'", profileType)
+			p := pprof.Lookup(profileType)
+			if p == nil {
+				log.Fatalf("unknown profile '%s'", profileType)
+			}
 		}
 
 		c := make(chan os.Signal, 1)
@@ -82,7 +86,7 @@ func writeProfile() error {
 	switch profileType {
 	case "cpu":
 		pprof.StopCPUProfile()
-	case "mem":
+	case "heap":
 		runtime.GC()
 		fallthrough
 	case "block":
@@ -126,11 +130,17 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", defaultConfFile, "config file")
 	rootCmd.PersistentFlags().StringVar(&dbFile, "db", defaultDbFile, "Inventory file location")
+	rootCmd.PersistentFlags().StringVar(&renderTemplate, "template", "default", "The loader/summary output renderTemplate")
 	rootCmd.PersistentFlags().BoolVar(&pprofEnabled, "enable-profile", false, "Enable profiling")
 	rootCmd.PersistentFlags().StringVar(&profileFile, "profile-file", "profile.pprof", "Profile file name")
 	rootCmd.PersistentFlags().StringVar(&profileType, "profile-type", "cpu", "Profile type (cpu, mem, block, mutex)")
 
 	err = viper.BindPFlag("db", rootCmd.PersistentFlags().Lookup("db"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = viper.BindPFlag("template", rootCmd.PersistentFlags().Lookup("template"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -145,6 +155,7 @@ func init() {
 	rootCmd.AddCommand(loader.NewLoaderCmd(cliIO))
 	rootCmd.AddCommand(tags.NewTagsCmd(cliIO))
 	rootCmd.AddCommand(version.NewVersionCmd(cliIO))
+	rootCmd.AddCommand(template.NewTemplateCmd(cliIO))
 }
 
 // initConfig reads in config file and ENV variables if set.

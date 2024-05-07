@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/tmwalaszek/hload/cmd/cliio"
-	"github.com/tmwalaszek/hload/cmd/common"
 	"github.com/tmwalaszek/hload/model"
 	"github.com/tmwalaszek/hload/storage"
+	"github.com/tmwalaszek/hload/templates"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,6 +21,8 @@ type FindOptions struct {
 	Name string
 
 	Tags []*model.LoaderTag
+
+	render *templates.RenderTemplate
 }
 
 func (o *FindOptions) Complete() {
@@ -33,6 +35,14 @@ func (o *FindOptions) Complete() {
 			})
 		}
 	}
+
+	r, err := templates.NewRenderTemplate(viper.GetString("template"), viper.GetString("db"))
+	if err != nil {
+		fmt.Fprintf(o.Err, "Can't create render template: %v", err)
+		os.Exit(1)
+	}
+
+	o.render = r
 }
 
 func (o *FindOptions) Run() {
@@ -49,8 +59,13 @@ func (o *FindOptions) Run() {
 			os.Exit(1)
 		}
 
-		output := common.WriteLoaderTags(o.UUID, loaderTags)
-		fmt.Fprintf(o.Out, "%s\n", output)
+		output, err := o.render.RenderTags(o.UUID, loaderTags)
+		if err != nil {
+			fmt.Fprintf(o.Err, "Error while rendering tags: %v", err)
+			os.Exit(1)
+		}
+
+		fmt.Fprintf(o.Out, "%s\n", string(output))
 		os.Exit(0)
 	}
 
@@ -61,7 +76,12 @@ func (o *FindOptions) Run() {
 			os.Exit(1)
 		}
 
-		output := common.WriteLoaderTagsMap(tags)
+		output, err := o.render.RenderTagsMap(tags)
+		if err != nil {
+			fmt.Fprintf(o.Err, "Error while rendering tags: %v", err)
+			os.Exit(1)
+		}
+
 		fmt.Fprintf(o.Out, "%s\n", output)
 		os.Exit(0)
 	}
@@ -73,22 +93,28 @@ func (o *FindOptions) Run() {
 			os.Exit(1)
 		}
 
-		configs := make([]common.LoaderSummaries, 0)
+		configs := make([]templates.LoaderSummaries, 0)
 
 		for _, loaderConf := range loaderConfs {
-			l := common.LoaderSummaries{
+			l := templates.LoaderSummaries{
 				Loader: loaderConf,
 			}
 
 			configs = append(configs, l)
 		}
 
-		loaderConfiguration := common.Loaders{
+		loaderConfiguration := &templates.Loaders{
 			Loaders: configs,
 			Short:   true,
 		}
 
-		fmt.Fprintf(o.Out, "%s\n", loaderConfiguration)
+		b, err := o.render.RenderOutput(loaderConfiguration)
+		if err != nil {
+			fmt.Fprintf(o.Err, "Error while rendering template: %v", err)
+			os.Exit(1)
+		}
+
+		fmt.Fprintf(o.Out, "%s\n", string(b))
 		os.Exit(0)
 	}
 }

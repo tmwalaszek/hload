@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/tmwalaszek/hload/cmd/cliio"
-	"github.com/tmwalaszek/hload/cmd/common"
 	"github.com/tmwalaszek/hload/loader"
 	"github.com/tmwalaszek/hload/model"
 	"github.com/tmwalaszek/hload/storage"
+	"github.com/tmwalaszek/hload/templates"
 
 	"github.com/jedib0t/go-pretty/v6/list"
 	"github.com/jedib0t/go-pretty/v6/progress"
@@ -44,7 +44,12 @@ type RunOptions struct {
 	ShowFullStats       bool
 	ShowAggregatedStats bool
 
+	// If set to true then it runs from start subcommand
+	Start bool
+
 	UUID string
+
+	render *templates.RenderTemplate
 
 	cliio.IO
 }
@@ -181,9 +186,14 @@ func (o *RunOptions) Run() {
 	fmt.Fprintf(o.Out, "\n")
 	o.printSummary(summary)
 
-	if o.Save {
+	if o.Save && !o.Start {
 		fmt.Fprintf(o.Out, "\n")
 		fmt.Fprintf(o.Out, "New loader configuration saved: %s\n", loaderUUID)
+	}
+
+	if o.Save && o.Start {
+		fmt.Fprintf(o.Out, "\n")
+		fmt.Fprintf(o.Out, "New summary saved for %s loader\n", loaderUUID)
 	}
 }
 
@@ -207,6 +217,14 @@ func tickReqCount(progressChan chan struct{}, tracker *progress.Tracker) {
 // CompleteDB uses information saved in the database
 func (o *RunOptions) CompleteDB() {
 	var err error
+
+	r, err := templates.NewRenderTemplate(viper.GetString("template"), viper.GetString("db"))
+	if err != nil {
+		fmt.Fprintf(o.Err, "Can't create render template: %v", err)
+		os.Exit(1)
+	}
+
+	o.render = r
 
 	o.Storage, err = storage.NewStorage(viper.GetString("db"))
 	if err != nil {
@@ -404,6 +422,7 @@ func NewLoaderRunCmd(cliIO cliio.IO) *cobra.Command {
 			}
 
 			opts.Complete()
+			opts.CompleteDB()
 			opts.Run()
 		},
 	}
@@ -473,10 +492,10 @@ func printLoaderDescription(opts *RunOptions) {
 }
 
 func (o *RunOptions) printSummary(summary *model.Summary) {
-	l := list.NewWriter()
-	fmt.Printf("Summary\n")
+	b, err := o.render.RenderSummary(summary, o.ShowFullStats, o.ShowAggregatedStats)
+	if err != nil {
+		log.Fatalf("Failed to render summary template: %v", err)
+	}
 
-	common.WriteSummary(l, summary, o.ShowFullStats, o.ShowAggregatedStats)
-
-	fmt.Fprintf(o.Out, "%s\n", l.Render())
+	fmt.Fprintf(o.Out, "%s\n", string(b))
 }
