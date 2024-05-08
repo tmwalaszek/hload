@@ -5,6 +5,8 @@ import (
 	_ "embed"
 	"fmt"
 	"text/template"
+
+	"github.com/jedib0t/go-pretty/v6/text"
 )
 
 var (
@@ -44,6 +46,14 @@ var (
 	summaryTemplate string
 	//go:embed sql/select_loader.tmpl
 	loaderConfigurationTemplate string
+	//go:embed sql/insert_template.sql
+	insertTemplate string
+	//go:embed sql/select_temaples.tmpl
+	selectTemplates string
+	//go:embed sql/delete_template.sql
+	deleteTemplate string
+	//go:embed sql/update_template.sql
+	updateTemplate string
 )
 
 // data is optional depending on the template
@@ -53,6 +63,9 @@ func generateSQLFromTemplate(tmplFile, tmpl string, data any) (string, error) {
 	funcAdd := template.FuncMap{
 		"add": func(x, y int) int {
 			return x + y
+		},
+		"bold": func(x string) string {
+			return text.Bold.Sprint(x)
 		},
 	}
 

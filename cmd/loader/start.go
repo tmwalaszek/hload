@@ -26,6 +26,7 @@ func NewLoaderStartCmd(cliIO cliio.IO) *cobra.Command {
 			}
 
 			opts.CompleteDB()
+			opts.Start = true
 			opts.Run()
 		},
 	}

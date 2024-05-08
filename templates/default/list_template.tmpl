@@ -1,0 +1,207 @@
+{{ define "tags" -}}
+Loader UUID: {{ .LoaderUUID }}
+Tags:
+{{ range $index, $tag := .Tags -}}
+    {{ if gt $index 0 -}}
+    {{ printf "\n" -}}
+    {{ end -}}
+    {{ printf "  %s: %s" $tag.Key $tag.Value -}}
+{{ end -}}
+{{ end -}}
+
+{{ define "tags_map" -}}
+{{ range $key, $value := . -}}
+Loader UUID: {{ $key }}
+  {{ $value.Key }}: {{ $value.Value -}}
+{{ end -}}
+{{ end -}}
+
+{{ define "loaders" -}}
+{{ range $index, $element := .Loaders -}}
+{{ bold "* Loader" }} {{ $index }}:
+  Loader UUID: {{ $element.Loader.UUID }}
+  Target Host: {{ $element.Loader.URL }}
+  Created at: {{ timeInLoc $element.Loader.CreateDate }}
+  Name: {{ $element.Loader.Name }}
+{{ if not $.Short -}}
+{{ printf "  HTTP Engine: %s\n" $element.Loader.HTTPEngine -}}
+{{ printf "  Description: %s\n" $element.Loader.Description -}}
+{{ printf "  Concurrent connection: %d\n" $element.Loader.Connections -}}
+
+{{ if ne $element.Loader.ReqCount 0 -}}
+    {{ printf "  Request count: %d\n" $element.Loader.ReqCount -}}
+{{ end -}}
+
+{{ if ne $element.Loader.AbortAfter 0 -}}
+    {{ printf "  Abort after failed requests: %s\n" $element.Loader.AbortAfter -}}
+{{ end -}}
+
+{{ if ne $element.Loader.RateLimit 0 -}}
+    {{ printf "  Rate limit (req/s): %s\n" $element.Loader.RateLimit -}}
+{{ end -}}
+
+{{ if $element.Loader.SkipVerify -}}
+    {{ printf "  TLS Skip verify: %s\n" $element.Loader.SkipVerify -}}
+{{ end -}}
+
+{{ if ne $element.Loader.CA nil -}}
+    {{ printf "  CA cert: %s\n" $element.Loader.CA -}}
+{{ end -}}
+
+{{ if ne $element.Loader.Cert nil -}}
+    {{ printf "  Certificate: %s\n" $element.Loader.Cert -}}
+{{ end -}}
+
+{{ if ne $element.Loader.Key nil -}}
+    {{ printf "  Key: %s\n" $element.Loader.Key -}}
+{{ end -}}
+
+{{ if ne $element.Loader.Duration 0 -}}
+    {{ printf "  Duration: %v\n" $element.Loader.Duration -}}
+{{ end -}}
+
+{{ if ne $element.Loader.KeepAlive 0 -}}
+    {{ printf "  Keep alive: %d\n" $element.Loader.KeepAlive -}}
+{{ end -}}
+
+{{ if ne $element.Loader.RequestDelay 0 -}}
+    {{ printf "  Request delay: %v\n" $element.Loader.RequestDelay -}}
+{{ end -}}
+
+{{ if ne $element.Loader.ReadTimeout 0 -}}
+    {{ printf "  Read timeout: %v\n" $element.Loader.ReadTimeout -}}
+{{ end -}}
+
+{{ if ne $element.Loader.WriteTimeout 0 -}}
+    {{ printf "  Write timeout: %v\n" $element.Loader.WriteTimeout -}}
+{{ end -}}
+
+{{ if ne $element.Loader.Timeout 0 -}}
+   {{ printf "  Timeout: %v\n" $element.Loader.Timeout -}}
+{{ end -}}
+
+{{ if ne $element.Loader.BenchmarkTimeout 0 -}}
+   {{ printf "  Benchmark timeout: %v\n" $element.Loader.BenchmarkTimeout -}}
+{{ end -}}
+
+{{ $lenght := len $element.Loader.Body -}}
+{{ if ne $lenght 0 -}}
+  {{ printf "  Body: %s\n" $element.Loader.Body -}}
+{{ end -}}
+
+{{ $lenght := len $element.Loader.Headers -}}
+{{ if gt $lenght 0 -}}
+    {{ printf "  Headers:\n" }}
+{{- range $key, $value := $element.Loader.Headers -}}
+    {{ printf "    %s: %v\n" $key $value -}}
+{{ end -}}
+{{ end -}}
+
+{{ $lenght := len $element.Loader.Parameters -}}
+{{ if gt $lenght 0 -}}
+    {{ printf "  Parameters:\n" }}
+{{- range $key, $value := $element.Loader.Parameters }}
+    {{ printf "    %s: %v\n" $key $value -}}
+{{ end -}}
+{{ end -}}
+
+{{ $lenght := len $element.Loader.Tags -}}
+{{ if gt $lenght 0 -}}
+    {{ printf "  Tags:\n" }}
+{{- range $key, $value := $element.Loader.Tags -}}
+    {{ printf "    %d: %s=%s\n" $key $value.Key $value.Value -}}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+{{ template "summaries" . -}}
+{{ end -}}
+
+{{ define "summaries" -}}
+{{ bold "Summaries:" }}
+{{ range $index, $loader := .Loaders -}}
+{{ range $index, $element := $loader.Summaries -}}
+{{ printf "---\n" -}}
+{{ bold "Summary" }} {{ $index }}
+* Basic
+{{- if ne $element.UUID "" }}
+  * {{ bold "UUID:" }} {{ $element.UUID -}}
+{{ end }}
+  * {{ bold "URL:" }} {{ $element.URL }}
+{{- if ne $element.Description "" }}
+  * {{ bold "Summary description:" }} {{ $element.Description -}}
+{{ end }}
+  * {{ bold "Start:" }} {{ timeInLoc $element.Start }}
+  * {{ bold "End:" }} {{ timeInLoc $element.End }}
+  * {{ bold "Duration:" }} {{ $element.TotalTime }}
+* Requests count:
+  * {{ bold "Total requests count:" }} {{ $element.ReqCount }}
+  * {{ bold "Success requests:" }}     {{ $element.SuccessReq }}
+  * {{ bold "Failed requests:" }}      {{ $element.FailReq }}
+  * {{ bold "Data transferred:" }}     {{ $element.DataTransferred }}
+  * {{ bold "Request per second:" }}   {{ $element.ReqPerSec }}
+* Requests latency:
+  * {{ bold "Average time:" }} {{ $element.AvgReqTime }}
+  * {{ bold "Min time:" }}     {{ $element.MinReqTime }}
+  * {{ bold "Max time:" }}     {{ $element.MaxReqTime }}
+  * {{ bold "P50 time:" }}     {{ $element.P50ReqTime }}
+  * {{ bold "P75 time:" }}     {{ $element.P75ReqTime }}
+  * {{ bold "P90 time:" }}     {{ $element.P90ReqTime }}
+  * {{ bold "P99 time:" }}     {{ $element.P99ReqTime }}
+{{ $lenght := len $element.Errors -}}
+{{ if gt $lenght 0 -}}
+* Errors:
+{{- range $key, $value := $element.Errors -}}
+    {{ $key_bold := bold (printf "Error %s" $key) -}}
+    {{ printf "\n  * %s: %d" $key_bold $value -}}
+{{ end -}}
+{{ print "\n" -}}
+{{ end -}}
+
+{{ $lenght := len $element.HTTPCodes -}}
+{{ if gt $lenght 0 -}}
+* HTTP Codes:
+{{- range $key, $value := $element.HTTPCodes -}}
+    {{ $key_bold := bold (printf "HTTP Code %d" $key) -}}
+    {{ printf "\n  * %s: %d" $key_bold $value -}}
+{{ end -}}
+{{ end -}}
+
+{{ $req_lenght := len $element.RequestStats -}}
+{{ $agg_lenght := len $element.AggregatedStats -}}
+{{ if and (gt $agg_lenght 0) ($.ShowAggregatedStats) -}}
+{{ print "\n" -}}
+* Aggregated stats
+{{- range $index, $value := $element.AggregatedStats }}
+  * {{ bold "Window" }} {{ $index }}
+    * {{ bold "Start time:" }} {{ timeInLoc $value.Start }}
+    * {{ bold "End time:" }} {{ timeInLoc $value.End }}
+    * {{ bold "Duration:" }} {{ $value.Duration }}
+    * {{ bold "Requests count:" }} {{ $value.RequestCount }}
+    * {{ bold "Min request time:" }} {{ $value.MinRequestTime }}
+    * {{ bold "Max request time:" }} {{ $value.MaxRequestTime }}
+    * {{ bold "Average request time:" }} {{ $value.AvgRequestTime -}}
+{{ end -}}
+{{ if $.ShowFullStats -}}
+{{ print "\n" -}}
+{{ end -}}
+{{ end -}}
+
+{{ if and (gt $req_lenght 0) ($.ShowFullStats) -}}
+* Full requests stats
+{{- range $index, $value := $element.RequestStats }}
+  * {{ bold "Request" }} {{ $index }}
+    * {{ bold "Start time:" }} {{ timeInLoc $value.Start }}
+    * {{ bold "End time:" }} {{ timeInLoc $value.End }}
+    * {{ bold "Duration:" }} {{ $value.Duration }}
+    * {{ bold "Body size:" }} {{ $value.BodySize }}
+    * {{ bold "Code:" }} {{ $value.RetCode }}
+{{- if ne $value.Error "" -}}
+    {{ $bold_error := bold (printf "Error: %s" $value.Error) -}}
+    {{ printf "\n    * %s" $bold_error -}}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+{{ end -}}
+{{ end -}}

@@ -145,7 +145,7 @@ func NewStorage(file string) (*Storage, error) {
 		return nil, err
 	}
 
-	_, err = db.Exec("PRAGMA foreign_keys = ON")
+	_, err = db.Exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode=WAL;")
 	if err != nil {
 		return nil, fmt.Errorf("could not set foreign_keys pragma on: %w", err)
 	}
@@ -214,4 +214,36 @@ func mapLoader(loaderAgg []*loaderAggregated) ([]*model.Loader, error) {
 	}
 
 	return confs, nil
+}
+
+// insertTablePrimaryUUID will perform a query to insert a table with primary key type TEXT and return it
+// the query inserted here has to provide RETURNING with the uuid return
+func (s *Storage) insertTablePrimaryUUID(tx *sqlx.Tx, query string, args any) (string, error) {
+	var uuid string
+	rows, err := tx.NamedQuery(query, args)
+	if err != nil {
+		return "", fmt.Errorf("error insert: %w", err)
+	}
+
+	rows.Next()
+	err = rows.Scan(&uuid)
+	if err != nil {
+		return "", fmt.Errorf("error insert UUID result: %w", err)
+	}
+
+	if rows.Err() != nil {
+		return "", fmt.Errorf("error insert: %w", err)
+	}
+
+	return uuid, nil
+}
+
+// insertTable insert table but do not care about the return
+func (s *Storage) insertTable(tx *sqlx.Tx, query string, args any) error {
+	_, err := tx.NamedExec(query, args)
+	if err != nil {
+		return fmt.Errorf("error insert: %w", err)
+	}
+
+	return nil
 }
