@@ -153,8 +153,9 @@ Loader UUID: {{ $key }}
 * Errors:
 {{- range $key, $value := $element.Errors -}}
     {{ $key_bold := bold (printf "Error %s" $key) -}}
-    {{ printf "\n  * %s: %d" $key_bold $value }}
+    {{ printf "\n  * %s: %d" $key_bold $value -}}
 {{ end -}}
+{{ print "\n" -}}
 {{ end -}}
 
 {{ $lenght := len $element.HTTPCodes -}}
