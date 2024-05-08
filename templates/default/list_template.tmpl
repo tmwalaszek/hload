@@ -164,10 +164,12 @@ Loader UUID: {{ $key }}
     {{ $key_bold := bold (printf "HTTP Code %d" $key) -}}
     {{ printf "\n  * %s: %d" $key_bold $value -}}
 {{ end -}}
+{{ print "\n" -}}
 {{ end -}}
 
-{{ $lenght := len $element.AggregatedStats -}}
-{{ if gt $lenght 0 -}}
+{{ $req_lenght := len $element.RequestStats -}}
+{{ $agg_lenght := len $element.AggregatedStats -}}
+{{ if gt $agg_lenght 0 -}}
 * Aggregated stats
 {{- range $index, $value := $element.AggregatedStats }}
   * {{ bold "Window" }} {{ $index }}
@@ -177,12 +179,14 @@ Loader UUID: {{ $key }}
     * {{ bold "Requests count:" }} {{ $value.RequestCount }}
     * {{ bold "Min request time:" }} {{ $value.MinRequestTime }}
     * {{ bold "Max request time:" }} {{ $value.MaxRequestTime }}
-    * {{ bold "Average request time:" }} {{ $value.AvgRequestTime }}
+    * {{ bold "Average request time:" }} {{ $value.AvgRequestTime -}}
+{{ end -}}
+{{ if gt $req_lenght 0 -}}
+{{ print "\n" -}}
 {{ end -}}
 {{ end -}}
 
-{{ $lenght := len $element.RequestStats -}}
-{{ if gt $lenght 0 -}}
+{{ if gt $req_lenght 0 -}}
 * Full requests stats
 {{- range $index, $value := $element.RequestStats }}
   * {{ bold "Request" }} {{ $index }}
