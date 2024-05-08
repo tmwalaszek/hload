@@ -34,5 +34,7 @@ func NewLoaderStartCmd(cliIO cliio.IO) *cobra.Command {
 	cmd.Flags().BoolP("save", "s", true, "Save the summary")
 	cmd.Flags().StringP("uuid", "u", "", "Loader configuration UUID from database")
 
+	_ = cmd.MarkFlagRequired("uuid")
+
 	return cmd
 }
