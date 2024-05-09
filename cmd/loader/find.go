@@ -120,11 +120,6 @@ func (o *FindOptions) Run() {
 			os.Exit(1)
 		}
 
-		if loaderConf == nil {
-			fmt.Fprintf(o.Err, "Loader configuration %s not found\n", o.UUID)
-			os.Exit(1)
-		}
-
 		summaries := o.getSummaries(loaderConf.UUID)
 		loaderOpts := templates.LoaderSummaries{
 			Loader:    loaderConf,
