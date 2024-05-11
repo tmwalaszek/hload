@@ -2,7 +2,6 @@ package template
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -51,13 +50,6 @@ func NewTemplateDeleteCmd(cliIO cliio.IO) *cobra.Command {
 			opts.Complete()
 			opts.Run()
 		},
-	}
-
-	cmd.PreRun = func(cmd *cobra.Command, args []string) {
-		err := viper.BindPFlags(cmd.Flags())
-		if err != nil {
-			log.Fatalf("Can't bind flags: %v", err)
-		}
 	}
 
 	cmd.Flags().StringVarP(&opts.TemplateName, "name", "n", "", "Template name")

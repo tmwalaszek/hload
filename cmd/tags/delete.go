@@ -49,7 +49,7 @@ func (o *DeleteOptions) Run() {
 }
 
 func NewTagsDelCmd(cliIO cliio.IO) *cobra.Command {
-	opts := AddOptions{
+	opts := DeleteOptions{
 		IO: cliIO,
 	}
 

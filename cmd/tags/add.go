@@ -30,13 +30,24 @@ func (o *AddOptions) Run() {
 
 	loaderTags := make([]*model.LoaderTag, 0)
 	for _, tag := range o.TagNames {
-		tags := strings.Split(tag, ":")
-		if len(tags) == 2 {
-			loaderTags = append(loaderTags, &model.LoaderTag{
-				Key:   tags[0],
-				Value: tags[1],
-			})
+		tags := strings.SplitN(tag, "=", 2)
+		var key, value string
+		if len(tags) == 1 {
+			if tags[0] == "" {
+				fmt.Fprintf(o.Err, "Empty tag name: %s", tag)
+				os.Exit(1)
+			}
+
+			key = tags[0]
+		} else {
+			key = tags[0]
+			value = tags[1]
 		}
+
+		loaderTags = append(loaderTags, &model.LoaderTag{
+			Key:   key,
+			Value: value,
+		})
 	}
 
 	err = s.InsertLoaderConfigurationTags(o.UUID, loaderTags)
@@ -60,6 +71,13 @@ func NewTagsAddCmd(cliIO cliio.IO) *cobra.Command {
 			opts.Run()
 		},
 	}
+
+	//cmd.PreRun = func(cmd *cobra.Command, args []string) {
+	//	err := viper.BindPFlags(cmd.Flags())
+	//	if err != nil {
+	//		log.Fatalf("Can't bind flags: %v", err)
+	//	}
+	//}
 
 	cmd.Flags().StringVarP(&opts.UUID, "uuid", "u", "", "Loader configuration UUID")
 	cmd.Flags().StringArrayVarP(&opts.TagNames, "tag", "t", []string{}, "Tag names pairs")
