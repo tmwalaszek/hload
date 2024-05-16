@@ -18,5 +18,6 @@ func NewTagsCmd(cliIO cliio.IO) *cobra.Command {
 	cmd.AddCommand(NewTagsFindCmd(cliIO))
 	cmd.AddCommand(NewTagsAddCmd(cliIO))
 	cmd.AddCommand(NewTagsDelCmd(cliIO))
+	cmd.AddCommand(NewTagsUpdateCommand(cliIO))
 	return cmd
 }

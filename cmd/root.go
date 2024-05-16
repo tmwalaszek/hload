@@ -76,6 +76,7 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
+
 	PreRun: func(cmd *cobra.Command, args []string) {
 		err := viper.BindPFlags(cmd.Flags())
 		if err != nil {

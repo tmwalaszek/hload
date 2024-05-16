@@ -1,0 +1,1 @@
+UPDATE loader_tag SET value = $1, update_date = datetime('now') WHERE key = $2 AND loader_uuid = $3;

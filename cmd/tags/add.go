@@ -72,13 +72,6 @@ func NewTagsAddCmd(cliIO cliio.IO) *cobra.Command {
 		},
 	}
 
-	//cmd.PreRun = func(cmd *cobra.Command, args []string) {
-	//	err := viper.BindPFlags(cmd.Flags())
-	//	if err != nil {
-	//		log.Fatalf("Can't bind flags: %v", err)
-	//	}
-	//}
-
 	cmd.Flags().StringVarP(&opts.UUID, "uuid", "u", "", "Loader configuration UUID")
 	cmd.Flags().StringArrayVarP(&opts.TagNames, "tag", "t", []string{}, "Tag names pairs")
 

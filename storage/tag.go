@@ -6,6 +6,15 @@ import (
 	"github.com/tmwalaszek/hload/model"
 )
 
+func (s *Storage) UpdateLoaderTag(loaderUUID string, key, value string) error {
+	_, err := s.db.Exec(updateLoaderTag, value, key, loaderUUID)
+	if err != nil {
+		return fmt.Errorf("update loader tag: %w", err)
+	}
+
+	return nil
+}
+
 func (s *Storage) DeleteLoaderTag(loaderUUID string, tags []*model.LoaderTag) (err error) {
 	tx := s.db.MustBegin()
 	defer func() {
@@ -21,15 +30,31 @@ func (s *Storage) DeleteLoaderTag(loaderUUID string, tags []*model.LoaderTag) (e
 		}
 	}()
 
+	var deletedCount int64
 	for _, tag := range tags {
-		_, err = tx.Exec(deleteLoaderTag, tag.Key, tag.Value, loaderUUID)
+		res, err := tx.Exec(deleteLoaderTag, tag.Key, tag.Value, loaderUUID)
 		if err != nil {
 			return fmt.Errorf("delete error loader_tag: %w", err)
 		}
+
+		rows, err := res.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("rows affected error: %w", err)
+		}
+
+		deletedCount += rows
 	}
 
 	err = tx.Commit()
-	return err
+	if err != nil {
+		return err
+	}
+
+	if deletedCount == 0 {
+		return fmt.Errorf("loader tags not found")
+	}
+
+	return nil
 }
 
 func (s *Storage) GetLoaderTagsByKey(key string) (map[string]*model.LoaderTag, error) {

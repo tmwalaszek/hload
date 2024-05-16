@@ -54,6 +54,8 @@ var (
 	deleteTemplate string
 	//go:embed sql/update_template.sql
 	updateTemplate string
+	//go:embed sql/update_loader_tag.sql
+	updateLoaderTag string
 )
 
 // data is optional depending on the template
