@@ -23,7 +23,7 @@ type UpdateOptions struct {
 func (o *UpdateOptions) Complete() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -33,7 +33,7 @@ func (o *UpdateOptions) Complete() {
 func (o *UpdateOptions) Run() {
 	err := o.s.UpdateLoaderTag(o.UUID, o.Key, o.Value)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't update tag: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 

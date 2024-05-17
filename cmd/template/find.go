@@ -1,6 +1,8 @@
 package template
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -26,7 +28,7 @@ type FindOptions struct {
 func (o *FindOptions) Complete() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -36,14 +38,14 @@ func (o *FindOptions) Complete() {
 func (o *FindOptions) Run() {
 	loc, err := time.LoadLocation("Local")
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't load time location: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
 	if o.Base {
 		_, err := io.WriteString(o.Out, templates.ListTemplate)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Can't write template: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
@@ -53,14 +55,18 @@ func (o *FindOptions) Run() {
 	if o.Name != "" {
 		temp, err := o.storage.GetTemplateByName(o.Name)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Can't find template %s: %v", o.Name, err)
+			if errors.Is(err, sql.ErrNoRows) {
+				// Do not print anything if we don't find anything
+				os.Exit(1)
+			}
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
 		if o.Full {
 			_, err = io.WriteString(o.Out, temp.Content)
 			if err != nil {
-				fmt.Fprintf(o.Err, "Can't write template: %v", err)
+				fmt.Fprintf(o.Err, "Error: %v", err)
 				os.Exit(1)
 			}
 
@@ -73,7 +79,7 @@ func (o *FindOptions) Run() {
 
 	templs, err := o.storage.GetTemplates(o.Limit)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't find templates: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 

@@ -116,7 +116,7 @@ func (o *FindOptions) Run() {
 	if o.UUID != "" {
 		loaderConf, err := o.db.GetLoaderByID(o.UUID)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while gettting loaders configuration: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
@@ -129,19 +129,19 @@ func (o *FindOptions) Run() {
 	} else if o.LoaderDescription != "" {
 		loaders, err = o.db.GetLoaderByDescription(o.LoaderDescription)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error getting loader configuration from the database: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	} else if o.RangeFind {
 		loaders, err = o.db.GetLoadersByRange(o.FromEpoch, o.ToEpoch, o.LoaderLimit)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error getting loader configuration from the database: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	} else {
 		loaders, err = o.db.GetLoaders(o.LoaderLimit)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error getting loader configuration from the database: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -161,7 +161,7 @@ func (o *FindOptions) Run() {
 	case "json":
 		output, err := json.MarshalIndent(loaderSummary, "", " ")
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while JSON marshaling output: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
@@ -169,7 +169,7 @@ func (o *FindOptions) Run() {
 	default:
 		b, err := o.render.RenderOutput(&loaderConfigurations)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while rendering output: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 		}
 		fmt.Fprintf(o.Out, "%s", string(b))
 	}

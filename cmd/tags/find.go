@@ -38,7 +38,7 @@ func (o *FindOptions) Complete() {
 
 	r, err := templates.NewRenderTemplate(viper.GetString("template"), viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create render template: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -48,21 +48,21 @@ func (o *FindOptions) Complete() {
 func (o *FindOptions) Run() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
 	if o.UUID != "" {
 		loaderTags, err := s.GetLoaderTags(o.UUID)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while getting tags: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
 		if len(loaderTags) > 0 {
 			output, err := o.render.RenderTags(o.UUID, loaderTags)
 			if err != nil {
-				fmt.Fprintf(o.Err, "Error while rendering tags: %v", err)
+				fmt.Fprintf(o.Err, "Error: %v", err)
 				os.Exit(1)
 			}
 
@@ -74,24 +74,28 @@ func (o *FindOptions) Run() {
 	if o.Name != "" {
 		tags, err := s.GetLoaderTagsByKey(o.Name)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while gettings tags: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
 		output, err := o.render.RenderTagsMap(tags)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while rendering tags: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
-		fmt.Fprintf(o.Out, "%s\n", output)
+		if len(output) > 0 {
+			fmt.Fprintf(o.Out, "%s\n", output)
+			os.Exit(0)
+		}
+
 		os.Exit(0)
 	}
 
 	if len(o.Tags) > 0 {
 		loaderConfs, err := s.GetLoaderByTags(o.Tags)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while gettting loaders configuration: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
@@ -112,12 +116,16 @@ func (o *FindOptions) Run() {
 
 		b, err := o.render.RenderOutput(loaderConfiguration)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while rendering template: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
-		fmt.Fprintf(o.Out, "%s\n", string(b))
-		os.Exit(0)
+		if len(b) > 0 {
+			fmt.Fprintf(o.Out, "%s\n", string(b))
+			os.Exit(0)
+		}
+
+		os.Exit(1)
 	}
 }
 

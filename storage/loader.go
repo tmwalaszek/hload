@@ -398,7 +398,7 @@ func (s *Storage) GetLoaderByID(loaderUUID string) (*model.Loader, error) {
 	}
 
 	if len(confs) == 0 {
-		return nil, fmt.Errorf("loader with id %s not found", loaderUUID)
+		return nil, fmt.Errorf("loader configuration %s not found", loaderUUID)
 	}
 
 	return confs[0], nil

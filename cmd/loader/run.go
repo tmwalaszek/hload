@@ -220,7 +220,7 @@ func (o *RunOptions) CompleteDB() {
 
 	r, err := templates.NewRenderTemplate(viper.GetString("template"), viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create render template: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -228,7 +228,7 @@ func (o *RunOptions) CompleteDB() {
 
 	o.Storage, err = storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -237,7 +237,7 @@ func (o *RunOptions) CompleteDB() {
 	if o.UUID != "" {
 		o.Conf, err = o.Storage.GetLoaderByID(o.UUID)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error fetching loader configuration from the database: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -259,7 +259,7 @@ func (o *RunOptions) Complete() {
 		viper.SetConfigFile(viper.GetString("loader_config"))
 
 		if err := viper.MergeInConfig(); err != nil {
-			fmt.Fprintf(o.Err, "Error on loading benchmark configuration %s: %v\n", viper.GetString("loader_config"), err)
+			fmt.Fprintf(o.Err, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	}
@@ -268,7 +268,7 @@ func (o *RunOptions) Complete() {
 	if viper.GetBool("save") {
 		o.Storage, err = storage.NewStorage(viper.GetString("db"))
 		if err != nil {
-			fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -285,7 +285,7 @@ func (o *RunOptions) Complete() {
 	for _, value := range viper.GetStringSlice("header") {
 		err := headers.Set(value)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error setting header %s: %v", value, err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -294,7 +294,7 @@ func (o *RunOptions) Complete() {
 		cookieHeader := fmt.Sprintf("Cookie: %s", viper.GetString("cookie"))
 		err = headers.Set(cookieHeader)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error setting cookie header: %v", err)
+			fmt.Fprintf(o.Err, "Error (setting cookie header): %v", err)
 			os.Exit(1)
 		}
 	}
@@ -302,7 +302,7 @@ func (o *RunOptions) Complete() {
 	for _, value := range viper.GetStringSlice("parameter") {
 		err := params.Set(value)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error setting parameter %s: %v", value, err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -311,7 +311,7 @@ func (o *RunOptions) Complete() {
 	if viper.GetString("ca") != "" {
 		caBody, err = os.ReadFile(viper.GetString("ca"))
 		if err != nil {
-			fmt.Fprintf(o.Err, "Could not read CA file: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -319,7 +319,7 @@ func (o *RunOptions) Complete() {
 	if viper.GetString("cert") != "" {
 		certBody, err = os.ReadFile(viper.GetString("cert"))
 		if err != nil {
-			fmt.Fprintf(o.Err, "Could not read Cert file: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -327,7 +327,7 @@ func (o *RunOptions) Complete() {
 	if viper.GetString("key") != "" {
 		keyBody, err = os.ReadFile("key")
 		if err != nil {
-			fmt.Fprintf(o.Err, "Could not read Key file: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -335,7 +335,7 @@ func (o *RunOptions) Complete() {
 	if viper.GetString("body") != "" {
 		body, err = os.ReadFile(viper.GetString("body"))
 		if err != nil {
-			fmt.Fprintf(o.Err, "Count not read body file: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}

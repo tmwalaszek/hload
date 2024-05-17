@@ -1,10 +1,12 @@
 package tags
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/mattn/go-sqlite3"
 	"github.com/tmwalaszek/hload/cmd/cliio"
 	"github.com/tmwalaszek/hload/model"
 	"github.com/tmwalaszek/hload/storage"
@@ -24,7 +26,7 @@ type AddOptions struct {
 func (o *AddOptions) Run() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -34,7 +36,7 @@ func (o *AddOptions) Run() {
 		var key, value string
 		if len(tags) == 1 {
 			if tags[0] == "" {
-				fmt.Fprintf(o.Err, "Empty tag name: %s", tag)
+				fmt.Fprintf(o.Err, "Error: empty tag name %s", tag)
 				os.Exit(1)
 			}
 
@@ -52,11 +54,19 @@ func (o *AddOptions) Run() {
 
 	err = s.InsertLoaderConfigurationTags(o.UUID, loaderTags)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Error while inserting tags: %v", err)
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if errors.Is(sqliteErr.Code, sqlite3.ErrConstraint) {
+				fmt.Fprintf(o.Err, "Error: loader configuration already contains provided tags")
+				os.Exit(1)
+			}
+		}
+
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(o.Out, "Successfully added tags to loader %s", o.UUID)
+	os.Exit(0)
 }
 
 func NewTagsAddCmd(cliIO cliio.IO) *cobra.Command {

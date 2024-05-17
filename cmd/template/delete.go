@@ -30,7 +30,7 @@ func (o *DeleteOptions) Complete() {
 func (o *DeleteOptions) Run() {
 	err := o.storage.DeleteTemplate(o.TemplateName)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't delete template %s: %v", o.TemplateName, err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 

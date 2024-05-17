@@ -20,19 +20,19 @@ type SaveOptions struct {
 func (o *SaveOptions) Run() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Error opening database file: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
 	viper.SetConfigFile(viper.GetString("file"))
 	if err := viper.MergeInConfig(); err != nil {
-		fmt.Fprintf(o.Err, "Error on loading benchmark configuration: %v\n", err)
+		fmt.Fprintf(o.Err, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
 	host := viper.GetString("url")
 	if host == "" {
-		fmt.Fprint(o.Err, "The url option has to provided")
+		fmt.Fprint(o.Err, "The Url option is mandatory")
 		os.Exit(1)
 	}
 
@@ -42,7 +42,7 @@ func (o *SaveOptions) Run() {
 	for _, header := range viper.GetStringSlice("headers") {
 		err := headers.Set(header)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error setting header: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -50,7 +50,7 @@ func (o *SaveOptions) Run() {
 	for _, param := range viper.GetStringSlice("parameters") {
 		err := params.Set(param)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error setting parameters: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -85,7 +85,7 @@ func (o *SaveOptions) Run() {
 
 	id, err := s.InsertLoaderConfiguration(opts)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Error on inserting loader opts: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 

@@ -1,10 +1,12 @@
 package template
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 
+	"github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tmwalaszek/hload/cmd/cliio"
@@ -22,7 +24,7 @@ type AddOptions struct {
 func (o *AddOptions) Complete() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -36,7 +38,7 @@ func (o *AddOptions) Run() {
 	if o.FileName != "" {
 		r, err = os.Open(o.FileName)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Can't open file %s: %v\n", o.FileName, err)
+			fmt.Fprintf(o.Err, "Error: %v\n", err)
 			os.Exit(1)
 		}
 	} else {
@@ -45,17 +47,23 @@ func (o *AddOptions) Run() {
 
 	b, err := io.ReadAll(r)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't read file: %v\n", err)
+		fmt.Fprintf(o.Err, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
 	err = o.storage.InsertTemplate(o.TemplateName, string(b))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't insert template: %v\n", err)
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) {
+			if errors.Is(sqliteErr.Code, sqlite3.ErrConstraint) {
+				fmt.Fprintf(o.Err, "Template %s already exists\n", o.TemplateName)
+				os.Exit(1)
+			}
+		}
+		fmt.Fprintf(o.Err, "Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(os.Stdout, "Added template %s\n", o.TemplateName)
 	os.Exit(0)
 }
 

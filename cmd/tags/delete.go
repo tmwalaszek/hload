@@ -24,7 +24,7 @@ type DeleteOptions struct {
 func (o *DeleteOptions) Run() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
@@ -41,7 +41,7 @@ func (o *DeleteOptions) Run() {
 
 	err = s.DeleteLoaderTag(o.UUID, loaderTags)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Error while inserting tags: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
