@@ -59,14 +59,16 @@ func (o *FindOptions) Run() {
 			os.Exit(1)
 		}
 
-		output, err := o.render.RenderTags(o.UUID, loaderTags)
-		if err != nil {
-			fmt.Fprintf(o.Err, "Error while rendering tags: %v", err)
-			os.Exit(1)
-		}
+		if len(loaderTags) > 0 {
+			output, err := o.render.RenderTags(o.UUID, loaderTags)
+			if err != nil {
+				fmt.Fprintf(o.Err, "Error while rendering tags: %v", err)
+				os.Exit(1)
+			}
 
-		fmt.Fprintf(o.Out, "%s\n", string(output))
-		os.Exit(0)
+			fmt.Fprintf(o.Out, "%s\n", string(output))
+			os.Exit(0)
+		}
 	}
 
 	if o.Name != "" {
