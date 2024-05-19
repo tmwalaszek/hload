@@ -110,7 +110,7 @@ Tags:
 {{ if gt $lenght 0 -}}
     {{ printf "  Tags:\n" }}
 {{- range $key, $value := $element.Loader.Tags -}}
-{{ if eq $value.Value " " -}}
+{{ if ne $value.Value "" -}}
     {{ printf "    %d: %s=%s\n" $key $value.Key $value.Value -}}
 {{ else -}}
    {{ printf "    %d: %s\n" $key $value.Key -}}

@@ -28,12 +28,16 @@ type FindOptions struct {
 func (o *FindOptions) Complete() {
 	for _, tag := range viper.GetStringSlice("tag") {
 		tags := strings.SplitN(tag, "=", 2)
+		var key, value string
 		if len(tags) == 2 {
-			o.Tags = append(o.Tags, &model.LoaderTag{
-				Key:   tags[0],
-				Value: tags[1],
-			})
+			value = tags[1]
 		}
+
+		key = tags[0]
+		o.Tags = append(o.Tags, &model.LoaderTag{
+			Key:   key,
+			Value: value,
+		})
 	}
 
 	r, err := templates.NewRenderTemplate(viper.GetString("template"), viper.GetString("db"))
@@ -151,7 +155,6 @@ func NewTagsFindCmd(cliIO cliio.IO) *cobra.Command {
 
 	cmd.Flags().StringVarP(&opts.UUID, "uuid", "u", "", "Loader configuration UUID from database")
 	cmd.Flags().StringVarP(&opts.Name, "name", "n", "", "Tag name")
-	// Tag pair key:value
 	cmd.Flags().StringArrayP("tag", "t", []string{}, "Tag names pairs - key=value")
 
 	return cmd
