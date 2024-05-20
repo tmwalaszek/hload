@@ -489,17 +489,27 @@ func (s *Storage) GetSummaries(loaderConfUUID string, opts ...Option) ([]*model.
 }
 
 func (s *Storage) GetLoaderByTags(tags []*model.LoaderTag) ([]*model.Loader, error) {
-	type wrappedTags struct {
-		Tags []*model.LoaderTag
+	type TagsKeysValues struct {
+		Keys   []string
+		Values []string
 	}
 
 	var loaderConfAgg []*loaderAggregated
 
-	wTags := wrappedTags{
-		Tags: tags,
+	var keys, values []string
+	for _, tag := range tags {
+		keys = append(keys, tag.Key)
+		if len(tag.Value) > 0 {
+			values = append(values, tag.Value)
+		}
 	}
 
-	sqlQuery, err := generateSQLFromTemplate(loaderConfigurationTemplate, "by_loader.tag", wTags)
+	kvTags := TagsKeysValues{
+		Keys:   keys,
+		Values: values,
+	}
+
+	sqlQuery, err := generateSQLFromTemplate(loaderConfigurationTemplate, "by_loader.tag", kvTags)
 	if err != nil {
 		return nil, err
 	}
@@ -515,7 +525,7 @@ func (s *Storage) GetLoaderByTags(tags []*model.LoaderTag) ([]*model.Loader, err
 
 	err = s.db.Select(&loaderConfAgg, sqlQuery, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("db error: %w", err)
 	}
 
 	optIDs, err := mapLoader(loaderConfAgg)
