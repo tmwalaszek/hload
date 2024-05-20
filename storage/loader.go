@@ -514,16 +514,7 @@ func (s *Storage) GetLoaderByTags(tags []*model.LoaderTag) ([]*model.Loader, err
 		return nil, err
 	}
 
-	args := make([]any, len(tags)*2)
-	i := 0
-	for _, tag := range tags {
-		args[i] = tag.Key
-		i++
-		args[i] = tag.Value
-		i++
-	}
-
-	err = s.db.Select(&loaderConfAgg, sqlQuery, args...)
+	err = s.db.Select(&loaderConfAgg, sqlQuery)
 	if err != nil {
 		return nil, fmt.Errorf("db error: %w", err)
 	}
