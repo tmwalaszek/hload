@@ -1,12 +1,10 @@
 package tags
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/mattn/go-sqlite3"
 	"github.com/tmwalaszek/hload/cmd/cliio"
 	"github.com/tmwalaszek/hload/model"
 	"github.com/tmwalaszek/hload/storage"
@@ -54,14 +52,6 @@ func (o *AddOptions) Run() {
 
 	err = s.InsertLoaderConfigurationTags(o.UUID, loaderTags)
 	if err != nil {
-		var sqliteErr sqlite3.Error
-		if errors.As(err, &sqliteErr) {
-			if errors.Is(sqliteErr.Code, sqlite3.ErrConstraint) {
-				fmt.Fprintf(o.Err, "Error: could not insert loader configuration tags: %s", sqliteErr.Error())
-				os.Exit(1)
-			}
-		}
-
 		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}

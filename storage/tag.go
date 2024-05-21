@@ -1,8 +1,11 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/mattn/go-sqlite3"
 	"github.com/tmwalaszek/hload/model"
 )
 
@@ -112,6 +115,17 @@ func (s *Storage) InsertLoaderConfigurationTags(loaderConfUUID string, loaderCon
 
 		err = s.insertTable(tx, loaderConfigurationTagInsert, tag)
 		if err != nil {
+			var sqliteErr sqlite3.Error
+			if errors.As(err, &sqliteErr) {
+				if errors.Is(sqliteErr.Code, sqlite3.ErrConstraint) {
+					if strings.Contains(sqliteErr.Error(), "UNIQUE constraint failed") {
+						return errors.New("tag for the loader UUID already exists")
+					} else if strings.Contains(sqliteErr.Error(), "FOREIGN KEY constraint failed") {
+						return errors.New("loader UUID does not exists")
+					}
+				}
+			}
+
 			return fmt.Errorf("insert error loader_tag: %w", err)
 		}
 	}
