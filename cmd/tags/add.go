@@ -57,7 +57,7 @@ func (o *AddOptions) Run() {
 		var sqliteErr sqlite3.Error
 		if errors.As(err, &sqliteErr) {
 			if errors.Is(sqliteErr.Code, sqlite3.ErrConstraint) {
-				fmt.Fprintf(o.Err, "Error: loader configuration already contains provided tags")
+				fmt.Fprintf(o.Err, "Error: could not insert loader configuration tags: %s", sqliteErr.Error())
 				os.Exit(1)
 			}
 		}
