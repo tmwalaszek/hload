@@ -1,1 +1,1 @@
-SELECT key,value,loader_uuid FROM loader_tag WHERE key=$1
+SELECT key,value,loader_uuid,create_date,update_date FROM loader_tag WHERE key=$1

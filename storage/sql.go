@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"strings"
 	"text/template"
 
 	"github.com/jedib0t/go-pretty/v6/text"
@@ -54,6 +55,8 @@ var (
 	deleteTemplate string
 	//go:embed sql/update_template.sql
 	updateTemplate string
+	//go:embed sql/update_loader_tag.sql
+	updateLoaderTag string
 )
 
 // data is optional depending on the template
@@ -66,6 +69,13 @@ func generateSQLFromTemplate(tmplFile, tmpl string, data any) (string, error) {
 		},
 		"bold": func(x string) string {
 			return text.Bold.Sprint(x)
+		},
+		"join": func(x []string) string {
+			for i, s := range x {
+				x[i] = fmt.Sprintf("'%s'", s)
+			}
+
+			return strings.Join(x, ",")
 		},
 	}
 

@@ -21,17 +21,15 @@ type DeleteOptions struct {
 func (o *DeleteOptions) Run() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Error on creating new storage: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
 	err = s.DeleteLoader(o.UUID)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Error deleting loader %s: %v", o.UUID, err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
-
-	fmt.Fprintf(o.Out, "Successfully deleted loadeer %s", o.UUID)
 }
 
 func NewLoaderDeleteCmd(cliIO cliio.IO) *cobra.Command {

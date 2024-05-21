@@ -24,28 +24,39 @@ type AddOptions struct {
 func (o *AddOptions) Run() {
 	s, err := storage.NewStorage(viper.GetString("db"))
 	if err != nil {
-		fmt.Fprintf(o.Err, "Can't create storage handler: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
 	loaderTags := make([]*model.LoaderTag, 0)
 	for _, tag := range o.TagNames {
-		tags := strings.Split(tag, ":")
-		if len(tags) == 2 {
-			loaderTags = append(loaderTags, &model.LoaderTag{
-				Key:   tags[0],
-				Value: tags[1],
-			})
+		tags := strings.SplitN(tag, "=", 2)
+		var key, value string
+		if len(tags) == 1 {
+			if tags[0] == "" {
+				fmt.Fprintf(o.Err, "Error: empty tag name %s", tag)
+				os.Exit(1)
+			}
+
+			key = tags[0]
+		} else {
+			key = tags[0]
+			value = tags[1]
 		}
+
+		loaderTags = append(loaderTags, &model.LoaderTag{
+			Key:   key,
+			Value: value,
+		})
 	}
 
 	err = s.InsertLoaderConfigurationTags(o.UUID, loaderTags)
 	if err != nil {
-		fmt.Fprintf(o.Err, "Error while inserting tags: %v", err)
+		fmt.Fprintf(o.Err, "Error: %v", err)
 		os.Exit(1)
 	}
 
-	fmt.Fprintf(o.Out, "Successfully added tags to loader %s", o.UUID)
+	os.Exit(0)
 }
 
 func NewTagsAddCmd(cliIO cliio.IO) *cobra.Command {

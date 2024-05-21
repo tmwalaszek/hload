@@ -1,10 +1,22 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/mattn/go-sqlite3"
 	"github.com/tmwalaszek/hload/model"
 )
+
+func (s *Storage) UpdateLoaderTag(loaderUUID string, key, value string) error {
+	_, err := s.db.Exec(updateLoaderTag, value, key, loaderUUID)
+	if err != nil {
+		return fmt.Errorf("update loader tag: %w", err)
+	}
+
+	return nil
+}
 
 func (s *Storage) DeleteLoaderTag(loaderUUID string, tags []*model.LoaderTag) (err error) {
 	tx := s.db.MustBegin()
@@ -21,15 +33,31 @@ func (s *Storage) DeleteLoaderTag(loaderUUID string, tags []*model.LoaderTag) (e
 		}
 	}()
 
+	var deletedCount int64
 	for _, tag := range tags {
-		_, err = tx.Exec(deleteLoaderTag, tag.Key, tag.Value, loaderUUID)
+		res, err := tx.Exec(deleteLoaderTag, tag.Key, tag.Value, loaderUUID)
 		if err != nil {
 			return fmt.Errorf("delete error loader_tag: %w", err)
 		}
+
+		rows, err := res.RowsAffected()
+		if err != nil {
+			return fmt.Errorf("rows affected error: %w", err)
+		}
+
+		deletedCount += rows
 	}
 
 	err = tx.Commit()
-	return err
+	if err != nil {
+		return err
+	}
+
+	if deletedCount == 0 {
+		return fmt.Errorf("loader tags not found")
+	}
+
+	return nil
 }
 
 func (s *Storage) GetLoaderTagsByKey(key string) (map[string]*model.LoaderTag, error) {
@@ -87,6 +115,17 @@ func (s *Storage) InsertLoaderConfigurationTags(loaderConfUUID string, loaderCon
 
 		err = s.insertTable(tx, loaderConfigurationTagInsert, tag)
 		if err != nil {
+			var sqliteErr sqlite3.Error
+			if errors.As(err, &sqliteErr) {
+				if errors.Is(sqliteErr.Code, sqlite3.ErrConstraint) {
+					if strings.Contains(sqliteErr.Error(), "UNIQUE constraint failed") {
+						return errors.New("tag for the loader UUID already exists")
+					} else if strings.Contains(sqliteErr.Error(), "FOREIGN KEY constraint failed") {
+						return errors.New("loader UUID does not exists")
+					}
+				}
+			}
+
 			return fmt.Errorf("insert error loader_tag: %w", err)
 		}
 	}

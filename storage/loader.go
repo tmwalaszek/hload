@@ -398,7 +398,7 @@ func (s *Storage) GetLoaderByID(loaderUUID string) (*model.Loader, error) {
 	}
 
 	if len(confs) == 0 {
-		return nil, fmt.Errorf("loader with id %s not found", loaderUUID)
+		return nil, fmt.Errorf("loader configuration %s not found", loaderUUID)
 	}
 
 	return confs[0], nil
@@ -489,33 +489,34 @@ func (s *Storage) GetSummaries(loaderConfUUID string, opts ...Option) ([]*model.
 }
 
 func (s *Storage) GetLoaderByTags(tags []*model.LoaderTag) ([]*model.Loader, error) {
-	type wrappedTags struct {
-		Tags []*model.LoaderTag
+	type TagsKeysValues struct {
+		Keys   []string
+		Values []string
 	}
 
 	var loaderConfAgg []*loaderAggregated
 
-	wTags := wrappedTags{
-		Tags: tags,
-	}
-
-	sqlQuery, err := generateSQLFromTemplate(loaderConfigurationTemplate, "by_loader.tag", wTags)
-	if err != nil {
-		return nil, err
-	}
-
-	args := make([]any, len(tags)*2)
-	i := 0
+	var keys, values []string
 	for _, tag := range tags {
-		args[i] = tag.Key
-		i++
-		args[i] = tag.Value
-		i++
+		keys = append(keys, tag.Key)
+		if len(tag.Value) > 0 {
+			values = append(values, tag.Value)
+		}
 	}
 
-	err = s.db.Select(&loaderConfAgg, sqlQuery, args...)
+	kvTags := TagsKeysValues{
+		Keys:   keys,
+		Values: values,
+	}
+
+	sqlQuery, err := generateSQLFromTemplate(loaderConfigurationTemplate, "by_loader.tag", kvTags)
 	if err != nil {
 		return nil, err
+	}
+
+	err = s.db.Select(&loaderConfAgg, sqlQuery)
+	if err != nil {
+		return nil, fmt.Errorf("db error: %w", err)
 	}
 
 	optIDs, err := mapLoader(loaderConfAgg)

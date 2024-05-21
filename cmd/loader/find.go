@@ -3,7 +3,9 @@ package loader
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/tmwalaszek/hload/cmd/cliio"
@@ -37,6 +39,8 @@ type FindOptions struct {
 	Output             string
 	From               string
 	To                 string
+
+	Tags []*model.LoaderTag
 
 	db     *storage.Storage
 	render *templates.RenderTemplate
@@ -80,6 +84,20 @@ func (o *FindOptions) Complete() {
 
 		o.RangeFind = true
 	}
+
+	for _, tag := range viper.GetStringSlice("tag") {
+		tags := strings.SplitN(tag, "=", 2)
+		var key, value string
+		if len(tags) == 2 {
+			value = tags[1]
+		}
+
+		key = tags[0]
+		o.Tags = append(o.Tags, &model.LoaderTag{
+			Key:   key,
+			Value: value,
+		})
+	}
 }
 
 func (o *FindOptions) getSummaries(loaderUUID string) []*model.Summary {
@@ -116,7 +134,7 @@ func (o *FindOptions) Run() {
 	if o.UUID != "" {
 		loaderConf, err := o.db.GetLoaderByID(o.UUID)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while gettting loaders configuration: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
@@ -129,19 +147,25 @@ func (o *FindOptions) Run() {
 	} else if o.LoaderDescription != "" {
 		loaders, err = o.db.GetLoaderByDescription(o.LoaderDescription)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error getting loader configuration from the database: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	} else if o.RangeFind {
 		loaders, err = o.db.GetLoadersByRange(o.FromEpoch, o.ToEpoch, o.LoaderLimit)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error getting loader configuration from the database: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
+			os.Exit(1)
+		}
+	} else if len(o.Tags) > 0 {
+		loaders, err = o.db.GetLoaderByTags(o.Tags)
+		if err != nil {
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	} else {
 		loaders, err = o.db.GetLoaders(o.LoaderLimit)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error getting loader configuration from the database: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 	}
@@ -161,7 +185,7 @@ func (o *FindOptions) Run() {
 	case "json":
 		output, err := json.MarshalIndent(loaderSummary, "", " ")
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while JSON marshaling output: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 			os.Exit(1)
 		}
 
@@ -169,7 +193,7 @@ func (o *FindOptions) Run() {
 	default:
 		b, err := o.render.RenderOutput(&loaderConfigurations)
 		if err != nil {
-			fmt.Fprintf(o.Err, "Error while rendering output: %v", err)
+			fmt.Fprintf(o.Err, "Error: %v", err)
 		}
 		fmt.Fprintf(o.Out, "%s", string(b))
 	}
@@ -187,6 +211,12 @@ func NewLoaderFindCmd(cliIO cliio.IO) *cobra.Command {
 			opts.Complete()
 			opts.Run()
 		},
+		PreRun: func(cmd *cobra.Command, args []string) {
+			err := viper.BindPFlags(cmd.Flags())
+			if err != nil {
+				log.Fatalf("Can't bind flags: %v", err)
+			}
+		},
 	}
 
 	cmd.Flags().StringVarP(&opts.UUID, "uuid", "u", "", "Loader configuration UUID")
@@ -200,6 +230,7 @@ func NewLoaderFindCmd(cliIO cliio.IO) *cobra.Command {
 	cmd.Flags().IntVarP(&opts.LoaderLimit, "loader-limit", "l", 10, "Limit the number of loaders that matches the query")
 	cmd.Flags().IntVarP(&opts.SummaryLimit, "summary-limit", "L", 5, "Limit the number of returned summaries")
 	cmd.Flags().BoolVar(&opts.ShowRequestsStats, "show-request-stats", false, "Show requests stats - both full or aggregated")
+	cmd.Flags().StringSlice("tag", []string{}, "Tag names pairs - key=valye")
 
 	return cmd
 }

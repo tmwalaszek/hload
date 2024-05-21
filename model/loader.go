@@ -109,6 +109,8 @@ func (p *Parameters) Set(value string) error {
 }
 
 type LoaderTag struct {
-	Key   string `db:"key" json:"key,omitempty"`
-	Value string `db:"value" json:"value,omitempty"`
+	Key        string    `db:"key" json:"key,omitempty"`
+	Value      string    `db:"value" json:"value,omitempty"`
+	CreateDate time.Time `db:"create_date" json:"create_date"`
+	UpdateDate time.Time `db:"update_date" json:"update_date"`
 }

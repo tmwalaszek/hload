@@ -76,6 +76,13 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 	},
+
+	PreRun: func(cmd *cobra.Command, args []string) {
+		err := viper.BindPFlags(cmd.Flags())
+		if err != nil {
+			log.Fatalf("Can't bind flags: %v", err)
+		}
+	},
 }
 
 func writeProfile() error {

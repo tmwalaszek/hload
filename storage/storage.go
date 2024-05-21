@@ -192,7 +192,7 @@ func mapLoader(loaderAgg []*loaderAggregated) ([]*model.Loader, error) {
 			confAgg.Loader.Parameters = parameter
 		}
 
-		if confAgg.TagsKeys != "" && confAgg.TagsValues != "" {
+		if confAgg.TagsKeys != "" {
 			tagsKeys := strings.Split(confAgg.TagsKeys, ",")
 			tagsValues := strings.Split(confAgg.TagsValues, ",")
 			if len(tagsKeys) != len(tagsValues) {

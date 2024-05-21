@@ -1,8 +1,8 @@
 {{ define "main" }}
 SELECT loader.*,
        loader_requests_details.*,
-       coalesce(group_concat(DISTINCT loader_tag.key), '') AS tags_keys_agg,
-       coalesce(group_concat(DISTINCT loader_tag.value), '') AS tags_values_agg,
+       coalesce(group_concat(loader_tag.key), '') AS tags_keys_agg,
+       coalesce(group_concat(loader_tag.value), '') AS tags_values_agg,
        coalesce(group_concat(DISTINCT header.header), '') AS headers_agg,
        coalesce(group_concat(DISTINCT parameter.parameters), '') AS parameters_agg
 FROM loader
@@ -47,17 +47,13 @@ LIMIT $3;
 
 {{ define "by_loader.tag" }}
 {{ template "main" }}
-{{ $lengthTags := len .Tags }}
-{{ $i := 0 }}
-{{ printf "WHERE " -}}
-{{ range .Tags -}}
-    {{ $place_holder_one := add $i 1 }}
-    {{ $place_holder_two := add $i 2 }}
-    {{ printf "loader_tag.key=$%d AND loader_tag.value=$%d" $place_holder_one $place_holder_two -}}
-    {{ $i = add $i 2 }}
-    {{ if lt $i $lengthTags }}
-    {{ printf " AND " -}}
-    {{ end }}
+{{ $keys := join .Keys -}}
+{{ $values := join .Values -}}
+{{ $in_keys := printf "loader_tag.key IN (%s)" $keys -}}
+{{ $in_values := "" -}}
+{{ if gt (len $values) 0 }}
+{{ $in_values = printf "AND loader_tag.value IN (%s)" $values -}}
 {{ end }}
+{{ printf "WHERE loader.uuid IN (SELECT loader.uuid from loader, loader_tag WHERE %s %s AND loader.uuid = loader_tag.loader_uuid)" $in_keys $in_values}}
 GROUP BY loader.uuid
 {{ end }}
